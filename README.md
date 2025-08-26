@@ -49,6 +49,13 @@ EvilGinx2 is a man-in-the-middle attack framework used for phishing login creden
 - ✅ **Auto-update** - Built-in EvilGinx2 update functionality
 - ✅ **Configuration display** - Easy access to all configuration paths
 
+### 🎯 **Phishlet Collection**
+- ✅ **89+ phishlets included** - Comprehensive collection bundled in repository
+- ✅ **Popular services covered** - Google, Facebook, Microsoft, Amazon, PayPal, LinkedIn
+- ✅ **Custom Bitrix24 phishlets** - Specialized for portal.keydisk.ru + universal version
+- ✅ **Auto-installation** - Phishlets installed automatically during setup
+- ✅ **Offline capability** - No internet dependency for phishlet installation
+
 ### 🔒 **Security & Reliability**
 - ✅ **Root privilege validation** - Ensures proper permissions
 - ✅ **Error handling** - Comprehensive error detection and reporting
@@ -74,6 +81,8 @@ EvilGinx2 is a man-in-the-middle attack framework used for phishing login creden
 # Download and run the installer
 curl -sSL https://raw.githubusercontent.com/sweetpotatohack/AKUMA-EvilGinx2-AutoInstaller/main/install_evilginx2.sh | sudo bash
 ```
+
+**⚠️ Note:** For the full experience with all 89+ phishlets, clone the repository instead of using one-line installation.
 
 ### Manual Installation
 
@@ -223,6 +232,99 @@ evilginx> phishlets enable office365   # Enable a phishlet
 evilginx> lures create office365       # Create a lure
 evilginx> sessions                     # View captured sessions
 ```
+
+### 🗂️ **Included Phishlets (89+ Total)**
+
+<details>
+<summary>🌟 Click to view complete phishlet collection</summary>
+
+#### 🏢 **Business & Enterprise**
+- **Microsoft**: microsoft, o365 (8 variants), outlook (4 variants), hotmail
+- **Google**: google, google2, google-botguard-bypass, gsuite
+- **AWS**: aws
+- **Citrix**: citrix
+- **Okta**: okta
+- **OneLogin**: onelogin
+
+#### 📧 **Email & Communication**
+- **Outlook**: outlook, outlook2, outlook3, hotmail
+- **AOL**: aol
+- **ProtonMail**: protonmail
+- **Viber**: viber
+
+#### 💰 **Financial & E-commerce**
+- **PayPal**: paypal, paypal(working2)
+- **Amazon**: amazon, amazon-seller, Amazon--
+- **eBay**: ebay
+- **Coinspot**: coinspot
+- **Fidelity**: fidelity
+- **Paxful**: paxful
+- **Luno**: luno
+- **Vanguard**: vanguard
+- **OpenBank**: openbank
+
+#### 🌐 **Social Media**
+- **Facebook**: facebook, facebook-d, facebook-d2, facebook-d3, facebook-fix
+- **LinkedIn**: linkedin, linkedin2
+- **Instagram**: instagram
+- **Twitter**: twitter, twitter-mobile
+- **TikTok**: tiktok
+- **Snapchat**: snapchat
+- **Reddit**: reddit
+
+#### 🏨 **Travel & Booking**
+- **Airbnb**: airbnb, airbnbfr
+- **Booking**: booking
+- **VRBO**: vrbo
+
+#### 🎮 **Gaming & Entertainment**
+- **PlayStation**: playstation, playstation-B
+- **Steam**: steam
+- **Roblox**: roblox
+- **SuperSport**: supersport
+
+#### 🛒 **Shopping & Marketplace**
+- **Alibaba**: alibaba
+- **Allegro**: allegro
+- **CoolBlue**: coolblue
+- **Mobile.de**: mobile-de
+- **Autoline**: autoline
+
+#### ☁️ **Cloud & Storage**
+- **DropBox**: dropbox
+- **iCloud**: icloud, icloud2
+
+#### 🏢 **Hosting & Domains**
+- **GoDaddy**: godaddy, godaddy(sso)
+- **Namecheap**: namecheap
+- **Rackspace**: rackspace
+- **Ionos**: ionos
+- **Hetzner**: hetzner
+
+#### 🔧 **Development & Tools**
+- **GitHub**: github
+- **WordPress**: wordpress.org
+- **Chrome Extension**: chrome_extension
+- **EDD**: edd
+
+#### 🏢 **Custom Business Solutions**
+- **Bitrix24**: bitrix24-keydisk (for portal.keydisk.ru), bitrix24-universal
+- **Intuit**: intuit
+- **Gusto**: gusto
+
+#### 🌏 **Regional Services**
+- **Xfinity**: xfinity
+- **Yahoo**: yahoo(fixed)
+- **Hinet**: hinet, webhinet
+- **Fudan**: fudan
+- **163**: 163working
+
+#### 🔐 **Security & Testing**
+- **reCAPTCHA**: recaptcha-demo
+- **hCaptcha**: hcaptcha-demo
+- **Example**: example (template)
+
+</details>
 
 ### 🔄 **Updates and Maintenance**
 
