@@ -98,6 +98,15 @@ chmod +x install_evilginx2.sh evilginx2_manager.sh
 sudo ./install_evilginx2.sh
 ```
 
+### 🔧 **Fix Missing Phishlets (if needed)**
+
+If you installed EvilGinx2 but phishlets are missing, use the fix script:
+
+```bash
+# Fix phishlets in existing installation
+sudo ./fix_phishlets.sh
+```
+
 ---
 
 ## 🎮 **Usage**
