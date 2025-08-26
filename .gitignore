@@ -1,0 +1,49 @@
+# Logs
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Temporary files
+.tmp/
+tmp/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Backup files
+*.bak
+*.backup
+
+# Local environment variables
+.env
+.env.local
+
+# EvilGinx2 specific
+evilginx2-data/database/
+*.db
+
+# Certificates
+*.pem
+*.crt
+*.key
+
+# Sensitive configuration
+config.yaml
+*.conf
