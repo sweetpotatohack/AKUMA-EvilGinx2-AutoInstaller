@@ -185,10 +185,34 @@ install_phishlets() {
     
     # Проверить наличие директории phishlets в репозитории
     if [[ -d "$SCRIPT_DIR/phishlets" ]]; then
-        # Копировать все phishlets из репозитория
-        cp "$SCRIPT_DIR/phishlets/"*.yaml /root/evilginx2-data/phishlets/ 2>/dev/null || true
+        # Копировать все phishlets из репозитория (включая скрытые файлы)
+        log "Копирование $(ls -1 "$SCRIPT_DIR/phishlets/"*.yaml 2>/dev/null | wc -l) phishlets из репозитория..."
         
-        success "Phishlets из репозитория установлены"
+        # Убедиться, что целевая директория существует
+        mkdir -p /root/evilginx2-data/phishlets/
+        
+        # Копировать все .yaml файлы
+        if cp "$SCRIPT_DIR/phishlets/"*.yaml /root/evilginx2-data/phishlets/ 2>/dev/null; then
+            success "Phishlets из репозитория установлены"
+        else
+            # Если не получилось с wildcard, копируем по одному
+            log "Копирование phishlets по одному файлу..."
+            for file in "$SCRIPT_DIR/phishlets/"*.yaml; do
+                if [[ -f "$file" ]]; then
+                    cp "$file" /root/evilginx2-data/phishlets/
+                fi
+            done
+            success "Phishlets скопированы индивидуально"
+        fi
+        
+        # Проверить результат
+        copied_count=$(ls -1 /root/evilginx2-data/phishlets/*.yaml 2>/dev/null | wc -l)
+        log "Скопировано $copied_count phishlet файлов"
+        
+        # Установить правильные права доступа
+        chown root:root /root/evilginx2-data/phishlets/*.yaml 2>/dev/null || true
+        chmod 644 /root/evilginx2-data/phishlets/*.yaml 2>/dev/null || true
+        
     else
         warning "Директория phishlets не найдена в репозитории"
         
