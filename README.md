@@ -3,7 +3,7 @@
 <div align="center">
 
 ![AKUMA Logo](https://img.shields.io/badge/AKUMA-EvilGinx2-red?style=for-the-badge&logo=hackthebox&logoColor=white)
-[![Version](https://img.shields.io/badge/Version-1.0.0-blue?style=for-the-badge)](https://github.com/sweetpotatohack/AKUMA-EvilGinx2-AutoInstaller)
+[![Version](https://img.shields.io/badge/Version-1.2.0-blue?style=for-the-badge)](https://github.com/sweetpotatohack/AKUMA-EvilGinx2-AutoInstaller)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 [![EvilGinx2](https://img.shields.io/badge/EvilGinx2-3.3.0-orange?style=for-the-badge)](https://github.com/kgretzky/evilginx2)
 
