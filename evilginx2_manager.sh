@@ -135,7 +135,26 @@ show_config() {
 show_phishlets() {
     log "Доступные phishlets:"
     if [[ -d "/root/evilginx2-data/phishlets" ]]; then
-        ls -la /root/evilginx2-data/phishlets/ | grep -v "^total"
+        echo -e "${YELLOW}Всего phishlets:${NC} $(ls -1 /root/evilginx2-data/phishlets/*.yaml 2>/dev/null | wc -l)"
+        echo ""
+        ls -la /root/evilginx2-data/phishlets/ | grep -v "^total" | head -20
+        echo ""
+        echo -e "${BLUE}Популярные сервисы:${NC}"
+        for service in google facebook microsoft o365 amazon paypal linkedin github; do
+            count=$(ls -1 /root/evilginx2-data/phishlets/ | grep -i "$service" | wc -l)
+            if [[ $count -gt 0 ]]; then
+                echo -e "  ${GREEN}$service:${NC} $count phishlet(s)"
+            fi
+        done
+        
+        echo ""
+        echo -e "${BLUE}Кастомные phishlets:${NC}"
+        if [[ -f "/root/evilginx2-data/phishlets/bitrix24-keydisk.yaml" ]]; then
+            echo -e "  ${GREEN}bitrix24-keydisk:${NC} Для portal.keydisk.ru"
+        fi
+        if [[ -f "/root/evilginx2-data/phishlets/bitrix24-universal.yaml" ]]; then
+            echo -e "  ${GREEN}bitrix24-universal:${NC} Универсальный Bitrix24"
+        fi
     else
         warning "Директория phishlets не найдена"
     fi

