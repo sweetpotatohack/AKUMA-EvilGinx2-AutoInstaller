@@ -1,49 +1,32 @@
-# Logs
-*.log
-
-# Runtime data
-pids
-*.pid
-*.seed
-*.pid.lock
+# Backup files
+*.backup
+*.backup*
+*.bak
 
 # Temporary files
-.tmp/
-tmp/
+*.tmp
+/tmp/
+*.log
 
-# OS generated files
+# Data files (may contain sensitive information)
+*.db
+data/
+sessions/
+export_*_*.json
+export_*_*.csv
+export_*_*.text
+
+# System files
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
 Thumbs.db
 
-# Editor files
+# IDE files
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# Backup files
-*.bak
-*.backup
-
-# Local environment variables
-.env
-.env.local
-
-# EvilGinx2 specific
-evilginx2-data/database/
-*.db
-
-# Certificates
-*.pem
-*.crt
-*.key
-
-# Sensitive configuration
-config.yaml
-*.conf
+# Runtime files
+*.pid
+nohup.out
